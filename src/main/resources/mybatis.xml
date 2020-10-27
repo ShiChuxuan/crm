@@ -32,7 +32,7 @@
          一般来讲配置文件.xml读文件都是读'/'这种形式的路径
          而.java文件一般都是读'.'这种形式的路径
          -->
-        <mapper resource="com/bjpowernode/dao/StudentDao.xml"></mapper>
+        <mapper resource="com/bjpowernode/crm/settings/dao/UserDao.xml"></mapper>
     </mappers>
 </configuration>
 
