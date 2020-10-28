@@ -9,7 +9,6 @@ import com.bjpowernode.crm.util.MD5Util;
 import com.bjpowernode.crm.util.SqlSessionUtil;
 import org.apache.ibatis.session.SqlSession;
 
-import java.util.List;
 
 public class UserServiceImpl implements UserService {
     private SqlSession session  = SqlSessionUtil.getSqlSession();
