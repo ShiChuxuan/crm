@@ -36,7 +36,6 @@ public class UserController extends HttpServlet {
         String ip = request.getRemoteAddr();//获取ip地址
         String loginAct = request.getParameter("loginAct");//获取账号
         String loginPwd = request.getParameter("loginPwd");//获取密码
-
         //获取代理对象
         UserService target = new UserServiceImpl();
         UserService service = (UserService) ServiceFactory.getService(target);
@@ -44,7 +43,7 @@ public class UserController extends HttpServlet {
         try {
             User user = service.login(loginAct,loginPwd,ip);
             request.getSession().setAttribute("user",user);
-            response.setContentType("application/json;charset=utf-8");
+            System.out.println("session_id:"+request.getSession().getId());
             PrintJson.printJsonFlag(response,true);//将成功信息以json格式返回，{"success":true}
 
         }catch (Exception e){
@@ -52,7 +51,6 @@ public class UserController extends HttpServlet {
             Map<String,Object> map = new HashMap<String,Object>();
             map.put("success",false);
             map.put("msg",msg);
-            response.setContentType("application/json;charset=utf-8");
             PrintJson.printJsonObj(response,map);//将失败信息以json格式返回，{"success":true,"msg":msg}
         }
 

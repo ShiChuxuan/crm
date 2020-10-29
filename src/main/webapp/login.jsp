@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" session="false" %>
 <%
 String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 	request.getServerPort() + request.getContextPath() + "/";
 %>
@@ -11,6 +11,12 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 <script type="text/javascript" src="jquery/bootstrap_3.3.0/js/bootstrap.min.js"></script>
 	<script>
 		$(function () {
+
+			if(window.top!=window){
+				window.top.location=window.location; //如果当前窗口不是顶层窗口就将它设置为顶层窗口)
+			}
+
+
 			//页面加载完毕后，将用户文本框中的内容清空
 			$("#loginAct").val("");
 			//页面加载完毕后，将用户文本框获得焦点
@@ -67,7 +73,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
                     if(data.success == true){
 
                         //跳转到工作台的初始页(欢迎页)
-                        window.location.href="workbench/index.html";
+                        window.location.href="workbench/index.jsp";
 
                     }else{
                         $("#msg").html(data.msg)
@@ -90,7 +96,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 			<div class="page-header">
 				<h1>登录</h1>
 			</div>
-			<!--workbench/index.html-->
+			<!--workbench/index.jsp-->
 			<form action="settings/user/login.do" class="form-horizontal" role="form">
 				<div class="form-group form-group-lg">
 					<div style="width: 350px;">
