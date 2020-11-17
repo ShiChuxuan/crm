@@ -7,4 +7,8 @@ import java.util.List;
 
 public interface UserDao {
     public abstract User login(@Param("loginAct") String loginAct, @Param("loginPwd") String loginPwd);
+
+    public abstract List<User> getUserList();
+
+
 }

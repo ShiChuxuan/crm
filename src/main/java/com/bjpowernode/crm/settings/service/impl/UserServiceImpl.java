@@ -9,6 +9,8 @@ import com.bjpowernode.crm.util.MD5Util;
 import com.bjpowernode.crm.util.SqlSessionUtil;
 import org.apache.ibatis.session.SqlSession;
 
+import java.util.List;
+
 
 public class UserServiceImpl implements UserService {
     private SqlSession session  = SqlSessionUtil.getSqlSession();
@@ -22,7 +24,7 @@ public class UserServiceImpl implements UserService {
 //---------------------------------------------------------------------------
         if(user==null){
             //判断账号是否为空
-            throw new LoginException("账号未注册");
+            throw new LoginException("账号未注册或密码错误");
         }
 //---------------------------------------------------------------------------
         String expireTime = user.getExpireTime();       //有效时间
@@ -50,5 +52,11 @@ public class UserServiceImpl implements UserService {
         }
 //---------------------------------------------------------------------------
         return user;
+    }
+
+    @Override
+    public List<User> getUserList() {
+        List<User> userList = userDao.getUserList();
+        return  userList;
     }
 }

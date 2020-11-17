@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjpowernode.crm.workbench.dao.ActivityDao">
+    <insert id="addActivity" >
+            insert into tbl_activity (id,owner,name,startDate,endDate,cost,description,createTime,createBy) values
+            (
+            #{id},
+            #{owner},
+            #{name},
+            #{startDate},
+            #{endDate},
+            #{cost},
+            #{description},
+            #{createTime},
+            #{createBy}
+            )
+
+    </insert>
+    <select id="pageList" resultType="com.bjpowernode.crm.workbench.domain.Activity">
+            select a.id,a.name,b.name as owner,a.startDate,a.endDate
+            from tbl_activity a
+            join tbl_user b
+            on a.owner = b.id
+
+            <where>
+                <if test="searchName!=null and searchName!=''">
+                    a.name like '%' #{searchName} '%'
+                </if>
+                <if test="searchOwner!=null and searchOwner!=''">
+                    and b.name like '%' #{searchOwner} '%'
+                </if>
+                <if test="searchStartDate!=null and searchStartDate!=''">
+                    and a.startDate &gt; #{searchStartDate}
+                </if>
+                <if test="searchEndDate!=null and searchEndDate!=''">
+                    and a.endDate &lt; #{searchEndDate}
+                </if>
+            </where>
+            order by a.createTime desc
+            limit #{skipCount},#{pageSize}
+    </select>
+
+    <select id="getTotalCondition" resultType="int">
+        select count(*)
+        from tbl_activity a
+        join tbl_user b
+        on a.owner = b.id
+        <where>
+            <if test="searchName!=null and searchName!=''">
+                a.name like '%' #{searchName} '%'
+            </if>
+            <if test="searchOwner!=null and searchOwner!=''">
+                and b.name like '%' #{searchOwner} '%'
+            </if>
+            <if test="searchStartDate!=null and searchStartDate!=''">
+                and a.startDate &gt; #{searchStartDate}
+            </if>
+            <if test="searchEndDate!=null and searchEndDate!=''">
+                and a.endDate &lt; #{searchEndDate}
+            </if>
+        </where>
+    </select>
+
+    <delete id="deleteById">
+        delete from tbl_activity where id in
+        <foreach collection="array" item="ids" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </delete>
+
+    <select id="getUserListAndActivity" resultType="com.bjpowernode.crm.workbench.domain.Activity">
+        select * from tbl_activity
+        where id = #{id}
+
+    </select>
+
+    <update id="updateActivity">
+        update tbl_activity set
+        owner = #{owner},
+        name  = #{name},
+        startDate = #{startDate},
+        endDate = #{endDate},
+        cost  = #{cost},
+        description = #{description},
+        editTime = #{editTime},
+        editBy = #{editBy}
+        where id = #{id}
+
+    </update>
+
+    <select id="getDetail" resultType="com.bjpowernode.crm.workbench.domain.Activity">
+        select
+        a.id,
+        b.name as owner,
+        a.name,
+        a.startDate,
+        a.endDate,
+        a.cost,
+        a.description,
+        a.createTime,
+        a.createBy,
+        a.editTime,
+        a.editBy
+        from tbl_activity a
+        join tbl_user b
+        on a.owner=b.id
+        where a.id = #{id}
+    </select>
+</mapper>

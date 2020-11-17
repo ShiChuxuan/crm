@@ -41,6 +41,7 @@ public class LoginFilter implements Filter {
                 response.sendRedirect(request.getContextPath()+"/login.jsp");
                 return;
             }
+            System.out.println("===合法访问===");
             filterChain.doFilter(servletRequest,servletResponse);
         }
 

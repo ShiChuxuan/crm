@@ -28,6 +28,7 @@ public class UserController extends HttpServlet {
         }else if("/settings/user/xxx.do".equals(path)){
 
             //xxx(request,response);
+            System.out.println("other...");
 
         }
     }
@@ -51,7 +52,7 @@ public class UserController extends HttpServlet {
             Map<String,Object> map = new HashMap<String,Object>();
             map.put("success",false);
             map.put("msg",msg);
-            PrintJson.printJsonObj(response,map);//将失败信息以json格式返回，{"success":true,"msg":msg}
+            PrintJson.printJsonObj(response,map);//将失败信息以json格式返回，{"success":false,"msg":msg}
         }
 
     }

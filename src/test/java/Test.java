@@ -2,10 +2,12 @@ import com.bjpowernode.crm.settings.dao.UserDao;
 import com.bjpowernode.crm.settings.domain.User;
 import com.bjpowernode.crm.settings.service.UserService;
 import com.bjpowernode.crm.settings.service.impl.UserServiceImpl;
-import com.bjpowernode.crm.util.DateTimeUtil;
-import com.bjpowernode.crm.util.MD5Util;
-import com.bjpowernode.crm.util.SqlSessionUtil;
-import com.bjpowernode.crm.util.TransactionInvocationHandler;
+import com.bjpowernode.crm.util.*;
+import com.bjpowernode.crm.workbench.dao.ActivityDao;
+import com.bjpowernode.crm.workbench.dao.ActivityRemarkDao;
+import com.bjpowernode.crm.workbench.domain.Activity;
+import com.bjpowernode.crm.workbench.service.ActivityService;
+import com.bjpowernode.crm.workbench.service.Impl.ActivityServiceImpl;
 import org.apache.ibatis.session.SqlSession;
 
 import java.lang.reflect.Proxy;
@@ -14,6 +16,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class Test {
 
@@ -81,6 +84,41 @@ public class Test {
         String pwd = "";
         String MD5PWD =  MD5Util.getMD5(pwd);
         System.out.println("MD5:"+MD5PWD);
+
+    }
+    @org.junit.Test
+    public void Test05(){
+        SqlSession session= SqlSessionUtil.getSqlSession();
+        UserDao userDao = session.getMapper(UserDao.class);
+        List<User> userList=userDao.getUserList();
+    }
+
+    @org.junit.Test
+    public void Test06(){
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String nowTime = sdf.format(date);
+        System.out.println(nowTime);
+    }
+
+    @org.junit.Test
+    public void Test07(){
+        SqlSession session = SqlSessionUtil.getSqlSession();
+        ActivityRemarkDao dao = session.getMapper(ActivityRemarkDao.class);
+        ActivityDao dao1 = session.getMapper(ActivityDao.class);
+
+        String[] ids = {"123","456","789","101112"};
+        int count  = dao1.deleteById(ids);
+        session.commit();
+        System.out.println(count);
+    }
+
+    @org.junit.Test
+    public void Test08(){
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String time = sdf.format(date);
+        System.out.println(time);
 
     }
 }

@@ -1,4 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java"  session="false" %>
+<%@ page import="com.bjpowernode.crm.settings.domain.User" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" session="false" %>
 <%
 String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 	request.getServerPort() + request.getContextPath() + "/";
 %>
@@ -142,7 +143,11 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 			<ul>
 				<li class="dropdown user-dropdown">
 					<a href="javascript:void(0)" style="text-decoration: none; color: white;" class="dropdown-toggle" data-toggle="dropdown">
-						<span class="glyphicon glyphicon-user"></span>${sessionScope.user.name}<span class="caret"></span>
+						<% HttpSession session=request.getSession();%>
+						<%User user = (User) session.getAttribute("user");%>
+						<% String name = user.getName();%>
+
+						<span class="glyphicon glyphicon-user"></span><%=name%><span class="caret"></span>
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 					</a>
 					<ul class="dropdown-menu">

@@ -1,4 +1,6 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java"  session="false" %>
+<%@ page import="org.apache.ibatis.session.SqlSession" %>
+<%@ page import="com.bjpowernode.crm.settings.domain.User" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" session="false"%>
 <%
 String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 	request.getServerPort() + request.getContextPath() + "/";
 %>
@@ -10,22 +12,438 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 <link href="jquery/bootstrap_3.3.0/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
 <link href="jquery/bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css" type="text/css" rel="stylesheet" />
 
+	<%--引入插件的顺序，必须是现有本体再有扩充。现有jQuery才有bootstrap再有datetimePicker-master最后才有bootstrap-datetimepicker.zh-CN.js--%>
 <script type="text/javascript" src="jquery/jquery-1.11.1-min.js"></script>
 <script type="text/javascript" src="jquery/bootstrap_3.3.0/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="jquery/bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js"></script>
 <script type="text/javascript" src="jquery/bootstrap-datetimepicker-master/locale/bootstrap-datetimepicker.zh-CN.js"></script>
 
+    <link rel="stylesheet" type="text/css" href="jquery/bs_pagination/jquery.bs_pagination.min.css">
+    <script type="text/javascript" src="jquery/bs_pagination/jquery.bs_pagination.min.js"></script>
+    <script type="text/javascript" src="jquery/bs_pagination/en.js"></script>
+
 <script type="text/javascript">
 
 	$(function(){
-		
-		
-		
+		$(".time").datetimepicker({
+			minView: "month",
+			language:  'zh-CN',
+			format: 'yyyy-mm-dd',
+			autoclose: true,
+			todayBtn: true,
+			pickerPosition: "bottom-left"
+		});
+		/*
+		* 	操作模态窗口的方式：
+		*
+		* 		需要操作的模态窗口的jQuery对象，调用modal方法，为该方法传递参数  show：打开模态窗口 hide：关闭模态窗口
+		*
+		* */
+		$("#addBtn").click(function () {
+
+			//走后台，目的是为了取得用户信息列表，为所有者下拉框铺值
+			$.ajax({
+				url : "workbench/activity/getUserList.do",
+				type: "post",
+				dataType:"json",
+				success:function (result) {
+
+					/*
+					*
+					* 	data
+					* 		[{"id":?,"name":?,"logicAct":?,..........},{2},{3}....]
+					* */
+
+					var html = "<option></option>"
+
+					//遍历出来的每一个n，就是一个user对象
+					$.each(result,function (i,n) {
+						html +="<option value = '"+n.id+"'>"+n.name+"</option>";
+					})
+					$("#create-marketActivityOwner").html(html);
+
+					//在js中使用el表达式，el表达式一定要套用在字符串中 例如：var id= "$/{sessionScope.user.id}/"
+					//获得session
+					<%HttpSession session = request.getSession();%>
+					//取得user
+					<%User user = (User) session.getAttribute("user");%>
+					//取得id
+					<%String id = user.getId();%>
+					//value = id?
+					$("#create-marketActivityOwner").val("<%=id%>"); //下拉框默认选中当前用户
+				}
+
+			})
+			$("#createActivityModal").modal("show")
+		})
+
+		$("#saveBtn").click(function () {
+			$.ajax({
+				url:"workbench/activity/addActivity.do",
+				type:"post",
+				dataType:"json",
+				data:{
+					owner:$.trim($("#create-marketActivityOwner > option:selected").val()),
+					name: $.trim($("#create-marketActivityName").val()),
+					startDate:$.trim($("#create-startTime").val()),
+					endDate:$.trim($("#create-endTime").val()),
+					cost:$.trim($("#create-cost").val()),
+					description:$.trim($("#create-describe").val())
+
+				},
+				success:function (result) {
+					/*
+					*
+					* 	data
+					* 		{"success"：true/false}
+					*
+					* */
+					if(result.success==true){
+
+						//添加成功后
+						//刷新市场活动信息列表(局部刷新)
+						// pageList(1,2);
+						/*
+						* 	$("#activityPage").bs_pagination('getOption', 'currentPage'):
+						* 		操作后停留在当前页
+						*
+						* 	$("#activityPage").bs_pagination('getOption', 'rowsPerPage'):
+						* 		操作后维持已经设置好的每页展现的记录数
+						*
+						* 	这两个参数不需要我们进行任何的修改操作
+						* 		直接使用即可
+						*
+						* */
+
+						//做回添加操作后，应该回到第一页，维持展现的记录数
+						pageList(1
+								,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
+
+
+						/*
+						*
+						* 	注意：
+						* 		我们拿到了form表单的jQuery对象
+						* 		对于表单的jQuery对象，提供了submit()方法让我们提交表单
+						* 		但是表单的jQuery对象，没有为我们提供reset()方法让我们重置表单(坑：idea为我们提示了有reset()方法)
+						*
+						* 		虽然jQuery对象没有为我们提供reset()方法，但是原生js为我们提供了reset方法
+						* 		所以我们要将jQuery对象转换为原生js对象
+						*
+						* 		jQuery对象转换为dom对象：
+						* 			jQuery对象[下标]
+						*
+						* 		dom对象转换为jQuery对象：
+						* 			$(dom)
+						*
+						* */
+						//清空添加操作的模态窗口
+						var activityAddForm = $("#activityAddForm")[0];
+						activityAddForm.reset();
+
+						//关闭添加操作的模态窗口
+						$("#createActivityModal").modal("hide");
+						//更新表格
+
+					}else{
+						alert("市场活动添加失败")
+					}
+				},
+			})
+		})
+			//页面加载完毕后触发一个方法
+			//默认展开列表的第一页，展现两条
+			pageList(1,2);
+
+			//为查询按钮绑定事件,触发pageList方法
+			$("#searchBtn").click(function () {
+				/*
+				*
+				* 点击查询按钮的时候，我们应该将搜索框的信息保存起来,保存到隐藏域当中
+				*
+				* */
+			    $("#hidden-name").val($.trim($("#search-name").val()))
+                $("#hidden-owner").val($.trim($("#search-owner").val()))
+                $("#hidden-startDate").val($.trim($("#search-startDate").val()))
+                $("#hidden-endDate").val($.trim($("#search-endDate").val()))
+
+
+                pageList(1,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
+			})
+
+            //---全选和全不选
+            //全选按钮绑定监听事件
+            $("#qx").click(function () {
+
+                    $("input[name=xz]").prop("checked",this.checked);
+
+            })
+            //除全选外的其他按钮绑定事件
+            //以下这种做法是不行的
+            /*
+                $("input[name=xz]").click(function () {
+                    alert("11111")
+                 })
+            */
+            //因为动态生成的元素，是不能够以普通绑定事件的形式来进行操作的
+            /*
+            *
+            *       动态生成的元素，我们要以on方式的形式来触发时间
+            *
+            *       语法：
+            *           $(需要绑定元素的有效的外层元素).on(绑定事件的方式，需要绑定的元素的jquery对象，回调函数)
+            *
+            * */
+            $("#activityBody").on("click",$("input[name=xz]"),function () {
+
+                $("#qx").prop("checked",$("input[name=xz]").length==$("input[name=xz]:checked").length)
+
+            })
+
+			//为删除按钮绑定事件，执行市场活动删除操作
+			$("#deleteBtn").click(function () {
+				//找到所有复选框中所有打√的复选框的jQuery对象
+				var $xz = $("input[name=xz]:checked");
+
+				if($xz.length==0){
+					alert("请至少勾选一个选项");
+				}else{
+
+					if(confirm("确定删除所选市场活动表吗？")){
+						//url:workbench/activity/deleteActivity.do
+
+						//拼接参数：
+						var param = "";
+
+						//将$xz中的每一个dom对象遍历出来，取其value值，就相当于取得需要删除的记录的id
+						$.each($xz,function (i,n) {
+							param +="id=" +$(n).val();
+
+							if(i<$xz.length-1){
+								param +="&";
+							}
+
+						})
+						$.ajax({
+							url:"workbench/activity/deleteActivity.do",
+							type:"post",
+							data:param,
+							dataType:"json",
+							success:function (result) {
+								if(result.success == true){
+									//删除成功后
+									pageList(1,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
+								}else{
+									alert("删除市场活动失败");
+								}
+							}
+						})
+					}
+
+				}
+
+			})
+
+			//为修改按钮绑定事件，打开修改操作的模态窗口
+			$("#editBtn").click(function () {
+
+				var $xz=$("input[name=xz]:checked");
+
+				if($xz.length==0){
+					alert("请选择需要修改的记录")
+				}else if($xz.length>1){
+					alert("只能选择一条记录进行修改")
+				}else{
+					//肯定只选了一条
+					//开始铺数据
+					var id = $xz.val();
+					$.ajax({
+						url:"workbench/activity/getUserListAndActivity.do",
+						type:"post",
+						data:{
+							id:id
+						},
+						dataType:"json",
+						success(result){
+							/*
+							* 	data
+							* 		用户列表
+							* 		市场活动对象
+							* 		{"uList":[{用户1},{2},{3}],"a":{市场活动表}}
+							*
+							* */
+
+							//处理所有者的下拉框
+							var html = "<option></option>";
+							$.each(result.uList,function (i,n) {
+								html +="<option value = '"+n.id+"'>"+n.name+"</option>";
+							})
+							    $("#edit-owner").html(html);
+
+							//处理activity
+							$("#edit-id").val(result.a.id)
+							$("#edit-owner").val(result.a.owner);
+							$("#edit-name").val(result.a.name);
+							$("#edit-startDate").val(result.a.startDate);
+							$("#edit-endDate").val(result.a.endDate);
+							$("#edit-cost").val(result.a.cost);
+							$("#edit-description").val(result.a.description);
+
+							//所有的值填写之后，就可以打开模态窗口了
+							$("#editActivityModal").modal("show")
+						}
+					})
+				}
+
+			})
+
+			//为更新按钮绑定事件，执行市场活动修改操作
+			/*
+			*
+			* 	在实际项目开发中，一定是按照先做添加，再做修改的这种顺序
+			* 	所以，为了节省开发时间，修改操作一般都是copy添加操作
+			*
+			* */
+			$("#updateBtn").click(function () {
+				//url:workbench/activity/updateActivity.do
+				$.ajax({
+					url:"workbench/activity/updateActivity.do",
+					type:"post",
+					data:{
+						id:$.trim($("#edit-id").val()),
+						owner:$.trim($("#edit-owner").val()),
+						name:$.trim($("#edit-name").val()),
+						startDate:$.trim($("#edit-startDate").val()),
+						endDate:$.trim($("#edit-endDate").val()),
+						cost:$.trim($("#edit-cost").val()),
+						description:$.trim($("#edit-description").val())
+					},
+					dataType:"json",
+					success(result){
+						if(result.success==true){
+							pageList($("#activityPage").bs_pagination('getOption', 'currentPage'),
+									$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
+							$("#editActivityModal").modal("hide");
+						}else{
+							alert("修改失败");
+						}
+					}
+
+				})
+			})
 	});
+	/*
+	*
+	* 		对于所有的关系型数据库，做前端的分页相关操作的基础组件
+	* 		就是pageNo和pageSize
+	* 		pageNo：页码
+	* 		pageSize：每页展现的记录数
+	*
+	* 		pageList方法：就是发出ajax请求到后台，从后台取得最新的市场活动信息列表数据
+	* 						通过响应回来的数据，局部刷新市场活动信息列表
+	*
+	* 		我们都在哪些情况下，需要调用pageList方法（什么情况下需要刷新一下市场活动列表）
+	* 		（1）点击左侧菜单中的"市场活动"超链接，需要刷新市场活动列表，调用pageList方法
+	* 		（2）添加，修改，删除后，需要刷新市场活动列表，调用pageList方法
+	* 		（3）点击查询按钮的时候，需要刷新市场活动列表，调用pageList方法
+	* 		（4）点击分页组件的时候，调用pageList方法
+	*
+	* 		以上为pageList方法指定了六个入口，也就是说，在以上六个操作完毕后，我们必须调用pageList方法，刷新市场活动信息列表
+	*
+	*
+	* */
+	function pageList(pageNo,pageSize) {
+
+		//将全选按钮的取消
+		$("#qx").prop("checked",false);
+
+		//将选中的按钮取消
+		$("input[name=xz]:checked").prop("checked",false);
+
+
+	    //查询前，将隐藏域中保存的信息取出来，重新赋予到搜索框当中
+        $("#search-name").val($.trim($("#hidden-name").val()))
+        $("#search-owner").val($.trim($("#hidden-owner").val()))
+        $("#search-startDate").val($.trim($("#hidden-startDate").val()))
+        $("#search-endDate").val($.trim($("#hidden-endDate").val()))
+
+	    $.ajax({
+			url:"workbench/activity/pageList.do",
+			type:"get",
+			data:{
+				pageNo:pageNo,
+				pageSize:pageSize,
+				searchName:$.trim($("#search-name").val()),
+				searchOwner:$.trim($("#search-owner").val()),
+				searchStartDate:$.trim($("#search-startDate").val()),
+				searchEndDate:$.trim($("#search-endDate").val())
+			},
+			dataType:"json",
+			success:function (result) {
+				/*
+				*
+				* 	data
+				*
+				* 		我们需要的：市场活动信息列表
+				* 		[{市场活动1},{2},{3}]
+				* 		分页插件需要的：查询出来的总记录数
+				* 		{"total":100}
+				*
+				* 		{"total":100,"dataList":[{市场活动1},{2},{3}]}
+				*
+				* */
+				var html = ""
+
+				//没一个n就是每一个市场活动对象
+				$.each(result.dataList,function (i,n) {
+					html+='<tr class="active">';
+					html+='<td><input type="checkbox" name="xz" value="'+n.id+'"/></td>'
+					html+='<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'workbench/activity/getDetail.do?id='+n.id+'\';">'+n.name+'</a></td>'
+					html+='<td>'+n.owner+'</td>';
+					html+='<td>'+n.startDate+'</td>';
+					html+='<td>'+n.endDate+'</td>';
+					html+='</tr>'
+				})
+				$("#activityBody").html(html);
+
+				//计算总页数
+				var totalPages = result.total%pageSize==0?result.total/pageSize:parseInt(result.total/pageSize)+1;
+
+				//数据处理完毕后，结合分页查询，对前端展现分页信息
+                $("#activityPage").bs_pagination({
+                    currentPage: pageNo, // 页码
+                    rowsPerPage: pageSize, // 每页显示的记录条数
+                    maxRowsPerPage: 20, // 每页最多显示的记录条数
+                    totalPages: totalPages, // 总页数
+                    totalRows: result.total, // 总记录条数
+
+                    visiblePageLinks: 5, // 显示几个卡片
+
+                    showGoToPage: true,
+                    showRowsPerPage: true,
+                    showRowsInfo: true,
+                    showRowsDefaultInfo: true,
+					//该回调函数是在，点击分页组件的时候触发的
+                    onChangePage : function(event, data){
+                        pageList(data.currentPage , data.rowsPerPage);
+                    }
+                });
+			}
+		})
+	}
+
+
+
+
 	
 </script>
 </head>
 <body>
+
+    <input type="hidden" id="hidden-name">
+    <input type="hidden" id="hidden-owner">
+    <input type="hidden" id="hidden-startDate">
+    <input type="hidden" id="hidden-endDate">
 
 	<!-- 创建市场活动的模态窗口 -->
 	<div class="modal fade" id="createActivityModal" role="dialog">
@@ -39,15 +457,13 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				</div>
 				<div class="modal-body">
 				
-					<form class="form-horizontal" role="form">
+					<form id="activityAddForm" class="form-horizontal" role="form">
 					
 						<div class="form-group">
 							<label for="create-marketActivityOwner" class="col-sm-2 control-label">所有者<span style="font-size: 15px; color: red;">*</span></label>
 							<div class="col-sm-10" style="width: 300px;">
 								<select class="form-control" id="create-marketActivityOwner">
-								  <option>zhangsan</option>
-								  <option>lisi</option>
-								  <option>wangwu</option>
+									<!--动态生成option-->
 								</select>
 							</div>
                             <label for="create-marketActivityName" class="col-sm-2 control-label">名称<span style="font-size: 15px; color: red;">*</span></label>
@@ -59,11 +475,11 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 						<div class="form-group">
 							<label for="create-startTime" class="col-sm-2 control-label">开始日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="create-startTime">
+								<input type="text" class="form-control time" id="create-startTime" readonly><!--引入开始时间，只读防止输入-->
 							</div>
 							<label for="create-endTime" class="col-sm-2 control-label">结束日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="create-endTime">
+								<input type="text" class="form-control time" id="create-endTime" readonly><!--引入结束时间，只读防止输入-->
 							</div>
 						</div>
                         <div class="form-group">
@@ -83,9 +499,17 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					</form>
 					
 				</div>
+				<%--
+
+						data-dismiss="modal"
+							表示关闭模态窗口
+
+				--%>
+
+
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">保存</button>
+					<button type="button" class="btn btn-primary" data-dismiss="modal" id="saveBtn">保存</button>
 				</div>
 			</div>
 		</div>
@@ -104,44 +528,53 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				<div class="modal-body">
 				
 					<form class="form-horizontal" role="form">
-					
+
+						<input type="hidden" id="edit-id">
+
 						<div class="form-group">
 							<label for="edit-marketActivityOwner" class="col-sm-2 control-label">所有者<span style="font-size: 15px; color: red;">*</span></label>
 							<div class="col-sm-10" style="width: 300px;">
-								<select class="form-control" id="edit-marketActivityOwner">
-								  <option>zhangsan</option>
-								  <option>lisi</option>
-								  <option>wangwu</option>
+								<select class="form-control" id="edit-owner">
+									<%--动态填充所有者--%>
 								</select>
 							</div>
                             <label for="edit-marketActivityName" class="col-sm-2 control-label">名称<span style="font-size: 15px; color: red;">*</span></label>
                             <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-marketActivityName" value="发传单">
+                                <input type="text" class="form-control" id="edit-name" >
                             </div>
 						</div>
 
 						<div class="form-group">
 							<label for="edit-startTime" class="col-sm-2 control-label">开始日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="edit-startTime" value="2020-10-10">
+								<input type="text" class="form-control time" id="edit-startDate" >
 							</div>
 							<label for="edit-endTime" class="col-sm-2 control-label">结束日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="edit-endTime" value="2020-10-20">
+								<input type="text" class="form-control time" id="edit-endDate" >
 							</div>
 						</div>
 						
 						<div class="form-group">
 							<label for="edit-cost" class="col-sm-2 control-label">成本</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="edit-cost" value="5,000">
+								<input type="text" class="form-control" id="edit-cost" >
 							</div>
 						</div>
 						
 						<div class="form-group">
 							<label for="edit-describe" class="col-sm-2 control-label">描述</label>
 							<div class="col-sm-10" style="width: 81%;">
-								<textarea class="form-control" rows="3" id="edit-describe">市场活动Marketing，是指品牌主办或参与的展览会议与公关市场活动，包括自行主办的各类研讨会、客户交流会、演示会、新产品发布会、体验会、答谢会、年会和出席参加并布展或演讲的展览会、研讨会、行业交流会、颁奖典礼等</textarea>
+								<%--
+
+										关于文本域textarea：
+											(1)一定是要以标签对的形式来呈现，正常状态下标签对要紧紧挨着
+											(2)textarea虽然是以标签对的形式来呈现，但是它也是属于表单元素范畴
+													我们所有的textarea的取值和赋值操作，应该统一使用val()方法(而不是html()方法)
+
+								--%>
+
+								<textarea class="form-control" rows="3" id="edit-description">123</textarea>
 							</div>
 						</div>
 						
@@ -150,7 +583,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">更新</button>
+					<button type="button" class="btn btn-primary" data-dismiss="modal" id="updateBtn">更新</button>
 				</div>
 			</div>
 		</div>
@@ -175,40 +608,55 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">名称</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" type="text" id="search-name">
 				    </div>
 				  </div>
 				  
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">所有者</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" type="text" id="search-owner">
 				    </div>
 				  </div>
-
 
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">开始日期</div>
-					  <input class="form-control" type="text" id="startTime" />
+					  <input class="form-control time" type="text" id="search-startDate" readonly/><!--引入开始时间，只读防止输入-->
 				    </div>
 				  </div>
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">结束日期</div>
-					  <input class="form-control" type="text" id="endTime">
+					  <input class="form-control time" type="text" id="search-endDate" readonly><!--引入结束时间，只读防止输入-->
 				    </div>
 				  </div>
 				  
-				  <button type="submit" class="btn btn-default">查询</button>
+				  <button type="button" class="btn btn-default" id="searchBtn">查询</button>
 				  
 				</form>
 			</div>
 			<div class="btn-toolbar" role="toolbar" style="background-color: #F7F7F7; height: 50px; position: relative;top: 5px;">
 				<div class="btn-group" style="position: relative; top: 18%;">
-				  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createActivityModal"><span class="glyphicon glyphicon-plus"></span> 创建</button>
-				  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#editActivityModal"><span class="glyphicon glyphicon-pencil"></span> 修改</button>
-				  <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
+					<!--
+							点击创建按钮，创建两个属性和属性值
+
+							data-toggle="modal":
+								表示触发该按钮，将要打开一个模态窗口
+
+							data-target="#createActivityModal":
+								表示要打开哪个模态窗口，通过#id的形式上找到该窗口
+
+							现在我们是以属性和属性值的方式写在了button元素中，用来打开模态窗口
+							但是这样做是有问题的：
+								问题在于没有办法对于按钮的功能进行扩充
+
+							所以我们未来的实际项目开发，对于触发模态窗口的操作，一定不要写死在元素当中，
+							应该有我们自己写js代码来操作
+					-->
+				  <button type="button" class="btn btn-primary" id="addBtn"><span class="glyphicon glyphicon-plus"></span> 创建</button>
+				  <button type="button" class="btn btn-default" id="editBtn"><span class="glyphicon glyphicon-pencil"></span> 修改</button>
+				  <button type="button" class="btn btn-danger" id="deleteBtn"><span class="glyphicon glyphicon-minus"></span> 删除</button>
 				</div>
 				
 			</div>
@@ -216,15 +664,15 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				<table class="table table-hover">
 					<thead>
 						<tr style="color: #B3B3B3;">
-							<td><input type="checkbox" /></td>
+							<td><input type="checkbox" id="qx"/></td>
 							<td>名称</td>
                             <td>所有者</td>
 							<td>开始日期</td>
 							<td>结束日期</td>
 						</tr>
 					</thead>
-					<tbody>
-						<tr class="active">
+					<tbody id="activityBody">
+						<%--<tr class="active">
 							<td><input type="checkbox" /></td>
 							<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href='workbench/activity/detail.jsp';">发传单</a></td>
                             <td>zhangsan</td>
@@ -237,48 +685,15 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
                             <td>zhangsan</td>
                             <td>2020-10-10</td>
                             <td>2020-10-20</td>
-                        </tr>
+                        </tr>--%>
 					</tbody>
 				</table>
 			</div>
 			
 			<div style="height: 50px; position: relative;top: 30px;">
-				<div>
-					<button type="button" class="btn btn-default" style="cursor: default;">共<b>50</b>条记录</button>
-				</div>
-				<div class="btn-group" style="position: relative;top: -34px; left: 110px;">
-					<button type="button" class="btn btn-default" style="cursor: default;">显示</button>
-					<div class="btn-group">
-						<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-							10
-							<span class="caret"></span>
-						</button>
-						<ul class="dropdown-menu" role="menu">
-							<li><a href="#">20</a></li>
-							<li><a href="#">30</a></li>
-						</ul>
-					</div>
-					<button type="button" class="btn btn-default" style="cursor: default;">条/页</button>
-				</div>
-				<div style="position: relative;top: -88px; left: 285px;">
-					<nav>
-						<ul class="pagination">
-							<li class="disabled"><a href="#">首页</a></li>
-							<li class="disabled"><a href="#">上一页</a></li>
-							<li class="active"><a href="#">1</a></li>
-							<li><a href="#">2</a></li>
-							<li><a href="#">3</a></li>
-							<li><a href="#">4</a></li>
-							<li><a href="#">5</a></li>
-							<li><a href="#">下一页</a></li>
-							<li class="disabled"><a href="#">末页</a></li>
-						</ul>
-					</nav>
-				</div>
-			</div>
-			
-		</div>
-		
+                <div id="activityPage"></div>
+		    </div>
+
 	</div>
 </body>
 </html>
