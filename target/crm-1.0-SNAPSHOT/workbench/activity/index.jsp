@@ -153,7 +153,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 		})
 			//页面加载完毕后触发一个方法
 			//默认展开列表的第一页，展现两条
-			pageList(1,2);
+			pageList(1,3);
 
 			//为查询按钮绑定事件,触发pageList方法
 			$("#searchBtn").click(function () {
@@ -226,13 +226,13 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 						})
 						$.ajax({
 							url:"workbench/activity/deleteActivity.do",
-							type:"post",
+							type:"get",
 							data:param,
 							dataType:"json",
 							success:function (result) {
 								if(result.success == true){
 									//删除成功后
-									pageList(1,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
+									pageList(1,$("#activityPage").$("#activityPage").bs_pagination('getOption', 'rowsPerPage')('getOption', 'rowsPerPage'));
 								}else{
 									alert("删除市场活动失败");
 								}
@@ -694,6 +694,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
                 <div id="activityPage"></div>
 		    </div>
 
+	</div>
 	</div>
 </body>
 </html>

@@ -2,6 +2,7 @@ package com.bjpowernode.crm.workbench.dao;
 
 import com.bjpowernode.crm.settings.domain.User;
 import com.bjpowernode.crm.workbench.domain.Activity;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -20,5 +21,11 @@ public interface ActivityDao {
 
     public abstract int updateActivity(Map<String, String> map);
 
-    Activity getDetail(String id);
+    public abstract Activity getDetail(String id);
+
+    public abstract List<Activity> getActivityListByClueId(String clueId);
+
+    public abstract List<Activity> getActivityListWithoutClueId(String clueId);
+
+    public abstract List<Activity> getActivityListByNameAndNotByClueId(@Param("clueId")String clueId, @Param("aname") String aname);
 }

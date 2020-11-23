@@ -165,5 +165,30 @@ public class ActivityServiceImpl implements ActivityService {
         return false;
     }
 
+    @Override
+    public Map<String, Object> getActivityListByClueId(String clueId) {
+        Map<String, Object> map = new HashMap<>();
+        List<Activity> activityList = activityDao.getActivityListByClueId(clueId);
+        if(activityList.size()!=0){
+            map.put("success",true);
+            map.put("activityList",activityList);
+        }else{
+            map.put("success",false);
+        }
+        return map;
+    }
+
+    @Override
+    public List<Activity> getActivityListWithoutClueId(String clueId) {
+        List<Activity> activities = activityDao.getActivityListWithoutClueId(clueId);
+        return activities;
+    }
+
+    @Override
+    public List<Activity> getActivityListByNameAndNotByClueId(String clueId, String aname) {
+        List<Activity> activities = activityDao.getActivityListByNameAndNotByClueId(clueId,aname);
+        return activities;
+    }
+
 
 }

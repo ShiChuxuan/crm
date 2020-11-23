@@ -1,6 +1,9 @@
 import com.bjpowernode.crm.settings.dao.UserDao;
+import com.bjpowernode.crm.settings.domain.DicValue;
 import com.bjpowernode.crm.settings.domain.User;
+import com.bjpowernode.crm.settings.service.DicService;
 import com.bjpowernode.crm.settings.service.UserService;
+import com.bjpowernode.crm.settings.service.impl.DicServiceImpl;
 import com.bjpowernode.crm.settings.service.impl.UserServiceImpl;
 import com.bjpowernode.crm.util.*;
 import com.bjpowernode.crm.workbench.dao.ActivityDao;
@@ -17,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Test {
 
@@ -120,5 +124,20 @@ public class Test {
         String time = sdf.format(date);
         System.out.println(time);
 
+    }
+
+    @org.junit.Test
+    public void Test09(){
+        //数据字典测试
+        DicService service = (DicService) ServiceFactory.getService(new DicServiceImpl());
+        Map<String,List<DicValue>>map = service.getAll();
+        Set<String> set = map.keySet();
+        for(String key:set){
+            List<DicValue> values=map.get(key);
+            System.out.println("====="+key+"=====");
+            for(DicValue value:values){
+                System.out.println("value:"+value.getText());
+            }
+        }
     }
 }

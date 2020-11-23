@@ -18,6 +18,8 @@ public interface ActivityService {
     public abstract List<ActivityRemark> showRemarkList(String aid);
     public abstract boolean deleteRemark(String id);
     public abstract Map<String,Object> addRemark(Map map);
-
     public abstract boolean updateRemark(ActivityRemark ar);
+    public abstract Map<String, Object> getActivityListByClueId(java.lang.String clueId);
+    public abstract List<Activity> getActivityListWithoutClueId(String clueId);
+    public abstract List<Activity> getActivityListByNameAndNotByClueId(String clueId, String aname);
 }

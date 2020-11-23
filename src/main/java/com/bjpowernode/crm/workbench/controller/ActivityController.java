@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.lang.reflect.Proxy;
+import java.security.Provider;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +56,10 @@ public class ActivityController extends HttpServlet {
           addRemark(request,response);
       }else if("/workbench/activity/updateRemark.do".equals(path)){
           updateRemark(request,response);
+      }else if("/workbench/activity/updateActivityInDetail.do".equals(path)){
+          updateActivityInDetail(request,response);
+      }else if("/workbench/activity/deleteActivityInDetail.do".equals(path)){
+          deleteActivity(request,response);
       }
 
     }
@@ -265,4 +270,51 @@ public class ActivityController extends HttpServlet {
         PrintJson.printJsonObj(response,map);
 
     }
+
+    private void updateActivityInDetail(HttpServletRequest request, HttpServletResponse response) {
+        ActivityService service = (ActivityService) ServiceFactory.getService(new ActivityServiceImpl());
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        String id = request.getParameter("id");
+        String owner = request.getParameter("owner");
+        String name =  request.getParameter("name");
+        String startDate = request.getParameter("startDate");
+        String endDate =request.getParameter("endDate");
+        String cost =request.getParameter("cost");
+        String description =request.getParameter("description");
+        String editTime = DateTimeUtil.getSysTime();
+        String editBy = user.getName();
+
+        Activity a = new Activity();
+        a.setId(id);
+        a.setOwner(owner);
+        a.setName(name);
+        a.setStartDate(startDate);
+        a.setEndDate(endDate);
+        a.setCost(cost);
+        a.setDescription(description);
+        a.setEditTime(editTime);
+        a.setEditBy(editBy);
+
+        Map<String,String>map = new HashMap<>();
+        map.put("id",id);
+        map.put("owner",owner);
+        map.put("name",name);
+        map.put("startDate",startDate);
+        map.put("endDate",endDate);
+        map.put("cost",cost);
+        map.put("description",description);
+        map.put("editTime",editTime);
+        map.put("editBy",editBy);
+
+        boolean flag = service.updateActivity(map);
+
+        Map result = new HashMap();
+        result.put("success",flag);
+        result.put("a",a);
+
+        PrintJson.printJsonObj(response,result);
+
+}
 }

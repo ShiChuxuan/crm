@@ -10,6 +10,8 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 <link href="jquery/bootstrap_3.3.0/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
 <script type="text/javascript" src="jquery/jquery-1.11.1-min.js"></script>
 <script type="text/javascript" src="jquery/bootstrap_3.3.0/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="jquery/bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js"></script>
+<script type="text/javascript" src="jquery/bootstrap-datetimepicker-master/locale/bootstrap-datetimepicker.zh-CN.js"></script>
 
 <script type="text/javascript">
 
@@ -17,6 +19,15 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 	var cancelAndSaveBtnDefault = true;
 	
 	$(function(){
+        $(".time").datetimepicker({
+            minView: "month",
+            language:  'zh-CN',
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayBtn: true,
+            pickerPosition: "bottom-left"
+        });
+
 		$("#remark").focus(function(){
 			if(cancelAndSaveBtnDefault){
 				//设置remarkDiv的高度为130px
@@ -88,7 +99,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
         //为更新按钮添加点击事件
         $("#updateBtn").click(function () {
             $.ajax({
-                url:"workbench/activity/updateActivity.do",
+                url:"workbench/activity/updateActivityInDetail.do",
                 type:"post",
                 dataType:"json",
                 data:{
@@ -103,9 +114,43 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
                 success(result){
                     if(result.success){
                         alert("修改成功");
+                        //更新页面
+                        $("#SCHD").html('市场活动-'+result.a.name+'<small>'+result.a.startDate+' ~ '+result.a.endDate+'</small>');//市场活动大标题
+                        $("#SYZ").html(result.a.owner);//所有者
+                        $("#MC").html(result.a.name);//名称
+                        $("#KSRQ").html(result.a.startDate);//开始日期
+                        $("#JSRQ").html(result.a.endDate);//结束日期
+                        $("#CB").html(result.a.cost);//成本
+                        $("#MS").html(result.a.description);//描述
+                        $("#XGZ").html(result.a.editBy);//修改者
+                        $("#XGRQ").html(result.a.editTime)//修改日期
+                    }else{
+                        alert("修改失败");
                     }
                 }
             })
+        })
+
+        //为删除按钮添加点击事件
+        $("#deleteBtn").click(function () {
+            if(confirm("确认删除这条市场活动吗？")){
+                $.ajax({
+                    url:"workbench/activity/deleteActivityInDetail.do",
+                    type:"post",
+                    data:{
+                        id:"${requestScope.get("activity").getId()}"
+                    },
+                    dataType:"JSON",
+                    success(result){
+                        if(result.success){
+                            alert("删除成功");
+                            location.href='workbench/activity/index.jsp';
+                        }
+
+                    }
+                })
+            }
+
         })
 
         //页面加载完毕后，展现该市场活动关联的信息列表
@@ -356,13 +401,13 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
                         </div>
 
                         <div class="form-group">
-                            <label for="edit-startTime" class="col-sm-2 control-label">开始日期</label>
+                            <label for="edit-startTime" class="col-sm-2 control-label ">开始日期</label>
                             <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-startDate" >
+                                <input type="text" class="form-control time" id="edit-startDate" readonly>
                             </div>
                             <label for="edit-endTime" class="col-sm-2 control-label">结束日期</label>
                             <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-endDate" >
+                                <input type="text" class="form-control time" id="edit-endDate" readonly>
                             </div>
                         </div>
 
@@ -399,11 +444,11 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 	<!-- 大标题 -->
 	<div style="position: relative; left: 40px; top: -30px;">
 		<div class="page-header">
-			<h3>市场活动-${requestScope.get("activity").getName()} <small>${requestScope.get("activity").getStartDate()} ~ ${requestScope.get("activity").getEndDate()}</small></h3>
+			<h3 id="SCHD">市场活动-${requestScope.get("activity").getName()} <small>${requestScope.get("activity").getStartDate()} ~ ${requestScope.get("activity").getEndDate()}</small></h3>
 		</div>
 		<div style="position: relative; height: 50px; width: 250px;  top: -72px; left: 700px;">
 			<button type="button" class="btn btn-default" id="editBtn"><span class="glyphicon glyphicon-edit"></span> 编辑</button>
-			<button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
+			<button type="button" class="btn btn-danger" id="deleteBtn"><span class="glyphicon glyphicon-minus"></span> 删除</button>
 		</div>
 	</div>
 	
@@ -411,40 +456,40 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 	<div style="position: relative; top: -70px;">
 		<div style="position: relative; left: 40px; height: 30px;">
 			<div style="width: 300px; color: gray;">所有者</div>
-			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>${requestScope.get("activity").getOwner()}</b></div>
+			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b id="SYZ">${requestScope.get("activity").getOwner()}</b></div>
 			<div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">名称</div>
-			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>${requestScope.get("activity").getName()}</b></div>
+			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b id="MC">${requestScope.get("activity").getName()}</b></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
 		</div>
 
 		<div style="position: relative; left: 40px; height: 30px; top: 10px;">
 			<div style="width: 300px; color: gray;">开始日期</div>
-			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>${requestScope.get("activity").getStartDate()}</b></div>
+			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b id="KSRQ">${requestScope.get("activity").getStartDate()}</b></div>
 			<div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">结束日期</div>
-			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>${requestScope.get("activity").getEndDate()}</b></div>
+			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b id="JSRQ">${requestScope.get("activity").getEndDate()}</b></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
 		</div>
 		<div style="position: relative; left: 40px; height: 30px; top: 20px;">
 			<div style="width: 300px; color: gray;">成本</div>
-			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>${requestScope.get("activity").getCost()}</b></div>
+			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b id="CB">${requestScope.get("activity").getCost()}</b></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -20px;"></div>
 		</div>
 		<div style="position: relative; left: 40px; height: 30px; top: 30px;">
 			<div style="width: 300px; color: gray;">创建者</div>
-			<div style="width: 500px;position: relative; left: 200px; top: -20px;"><b>${requestScope.get("activity").getCreateBy()}&nbsp;&nbsp;</b><small style="font-size: 10px; color: gray;">${requestScope.get("activity").getCreateTime()}</small></div>
+			<div style="width: 500px;position: relative; left: 200px; top: -20px;"><b>${requestScope.get("activity").getCreateBy()}&nbsp;&nbsp;</b><small style="font-size: 10px; color: gray;" id="CJZ">${requestScope.get("activity").getCreateTime()}</small></div>
 			<div style="height: 1px; width: 550px; background: #D5D5D5; position: relative; top: -20px;"></div>
 		</div>
 		<div style="position: relative; left: 40px; height: 30px; top: 40px;">
 			<div style="width: 300px; color: gray;">修改者</div>
-			<div style="width: 500px;position: relative; left: 200px; top: -20px;"><b>${requestScope.get("activity").getEditBy()}&nbsp;&nbsp;</b><small style="font-size: 10px; color: gray;">${requestScope.get("activity").getEditTime()}</small></div>
+			<div style="width: 500px;position: relative; left: 200px; top: -20px;"><b id="XGZ">${requestScope.get("activity").getEditBy()}&nbsp;&nbsp;</b><small style="font-size: 10px; color: gray;" id="XGRQ">${requestScope.get("activity").getEditTime()}</small></div>
 			<div style="height: 1px; width: 550px; background: #D5D5D5; position: relative; top: -20px;"></div>
 		</div>
 		<div style="position: relative; left: 40px; height: 30px; top: 50px;">
 			<div style="width: 300px; color: gray;">描述</div>
 			<div style="width: 630px;position: relative; left: 200px; top: -20px;">
-				<b>
+				<b id="MS">
 					${requestScope.get("activity").getDescription()}
 				</b>
 			</div>

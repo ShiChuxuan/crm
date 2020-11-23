@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bjpowernode.crm.workbench.dao.ClueDao">
+	<insert id="saveClue">
+        insert into tbl_clue
+        (
+            id,
+            fullname,
+            appellation,
+            owner,
+            company,
+            job,
+            email,
+            phone,
+            website,
+            mphone,
+            state,
+            source,
+            createBy,
+            createTime,
+            description,
+            contactSummary,
+            nextContactTime,
+            address
+        )
+        values (
+            #{id},
+            #{fullname},
+            #{appellation},
+            #{owner},
+            #{company},
+            #{job},
+            #{email},
+            #{phone},
+            #{website},
+            #{mphone},
+            #{state},
+            #{source},
+            #{createBy},
+            #{createTime},
+            #{description},
+            #{contactSummary},
+            #{nextContactTime},
+            #{address}
+        )
+    </insert>
+
+    <select id="pageList" resultType="com.bjpowernode.crm.workbench.domain.Clue">
+        select a.id,a.fullname,a.company,a.phone,a.mphone,a.source,b.name as owner,a.state
+        from tbl_clue a
+        join tbl_user b
+        on a.owner = b.id
+        <where>
+            <if test="fullname!=null and fullname!=''">
+                a.fullname like '%' #{fullname} '%'
+            </if>
+
+            <if test="company!=null and company!=''">
+                and a.company like '%' #{company} '%'
+            </if>
+
+            <if test="phone!=null and phone!=''">
+                and a.phone like '%' #{phone} '%'
+            </if>
+
+            <if test="mPhone!=null and mPhone!=''">
+                and a.mphone like '%' #{mPhone} '%'
+            </if>
+
+            <if test="source!=null and source!=''">
+                and a.source like  '%' #{source} '%'
+            </if>
+
+            <if test="owner!=null and owner!=''">
+                and b.name like '%' #{owner} '%'
+            </if>
+
+            <if test="state!=null and state!=''">
+                and a.state like '%' #{state} '%'
+            </if>
+        </where>
+        order by a.createTime desc
+        limit #{skipCount},#{pageSize}
+    </select>
+
+    <select id="getTotalCondition" resultType="int">
+        select count(*)
+        from tbl_clue a
+        join tbl_user b
+        on a.owner = b.id
+        <where>
+        <if test="fullname!=null and fullname!=''">
+            a.fullname like '%' #{fullname} '%'
+        </if>
+
+        <if test="company!=null and company!=''">
+            and a.company like '%' #{company} '%'
+        </if>
+
+        <if test="phone!=null and phone!=''">
+            and a.phone like '%' #{phone} '%'
+        </if>
+
+        <if test="mPhone!=null and mPhone!=''">
+            and a.mphone like '%' #{mPhone} '%'
+        </if>
+
+        <if test="source!=null and source!=''">
+            and a.source like  '%' #{source} '%'
+        </if>
+
+        <if test="owner!=null and owner!=''">
+            and b.name like '%' #{owner} '%'
+        </if>
+
+        <if test="state!=null and state!=''">
+            and a.state like '%' #{state} '%'
+        </if>
+        </where>
+    </select>
+
+    <delete id="deleteClue">
+        delete from tbl_clue where id in
+
+        <foreach collection="array" item="ids" open="(" separator="," close=")">
+                #{ids}
+        </foreach>
+
+    </delete>
+
+    <select id="getClueById" resultType="com.bjpowernode.crm.workbench.domain.Clue">
+        select
+            a.id,
+            a.fullname,
+            a.appellation,
+            b.name as owner,
+            a.company,
+            a.job,
+            a.email,
+            a.phone,
+            a.website,
+            a.mphone,
+            a.state,
+            a.source,
+            a.createBy,
+            a.createTime,
+            a.editBy,
+            a.editTime,
+            a.description,
+            a.contactSummary,
+            a.nextContactTime,
+            a.address
+
+        from tbl_clue a
+        join tbl_user b
+        on a.owner = b.id
+        where a.id = #{id}
+    </select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
