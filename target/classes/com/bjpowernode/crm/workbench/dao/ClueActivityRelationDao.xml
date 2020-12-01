@@ -7,6 +7,41 @@
     <delete id="relieveById">
         delete from tbl_clue_activity_relation where id = #{id}
     </delete>
+
+    <insert id="relate">
+        insert into tbl_clue_activity_relation
+        Values
+        <foreach collection="list" item="relations"  separator=","  index="index">
+            (
+            #{relations.id},#{relations.clueId},#{relations.activityId}
+            )
+        </foreach>
+    </insert>
+
+    <select id="getCountByCid" resultType="int">
+        select count(*)
+        from tbl_clue_activity_relation
+        where clueId in
+        <foreach collection="array" item="ids" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </select>
+
+    <delete id="deleteByCid">
+        delete
+        from tbl_clue_activity_relation
+        where clueId in
+        <foreach collection="array" item="ids" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </delete>
+
+    <select id="getActivityIdByCid" resultType="string">
+        select activityId
+        from tbl_clue_activity_relation
+        where clueId = #{clueId}
+    </select>
+
 </mapper>
 
 

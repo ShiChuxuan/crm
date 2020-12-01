@@ -5,7 +5,11 @@
 
 <mapper namespace="com.bjpowernode.crm.workbench.dao.ContactsActivityRelationDao">
 	
-  	
+  	<insert id="relate">
+        insert into tbl_contacts_activity_relation
+        values
+        (#{id},#{contactId},#{activityId})
+    </insert>
 </mapper>
 
 

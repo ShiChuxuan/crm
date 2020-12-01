@@ -28,4 +28,6 @@ public interface ActivityDao {
     public abstract List<Activity> getActivityListWithoutClueId(String clueId);
 
     public abstract List<Activity> getActivityListByNameAndNotByClueId(@Param("clueId")String clueId, @Param("aname") String aname);
+
+    public abstract List<Activity> getActivityListByName(@Param("clueId") String clueId, @Param("aname")String aname);
 }

@@ -16,4 +16,6 @@ public interface ClueDao {
     public abstract int deleteClue(String[] ids);
 
     public abstract Clue getClueById(String id);
+
+    public abstract Clue getClueById2(String id);
 }

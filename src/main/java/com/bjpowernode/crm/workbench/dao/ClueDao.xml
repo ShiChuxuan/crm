@@ -159,6 +159,12 @@
         on a.owner = b.id
         where a.id = #{id}
     </select>
+
+    <select id="getClueById2" resultType="com.bjpowernode.crm.workbench.domain.Clue">
+        select *
+        from tbl_clue
+        where id = #{id}
+    </select>
 </mapper>
 
 

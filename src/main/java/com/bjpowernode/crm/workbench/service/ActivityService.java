@@ -22,4 +22,6 @@ public interface ActivityService {
     public abstract Map<String, Object> getActivityListByClueId(java.lang.String clueId);
     public abstract List<Activity> getActivityListWithoutClueId(String clueId);
     public abstract List<Activity> getActivityListByNameAndNotByClueId(String clueId, String aname);
+
+    public abstract List<Activity> getActivityListByName(String clueId, String aname);
 }

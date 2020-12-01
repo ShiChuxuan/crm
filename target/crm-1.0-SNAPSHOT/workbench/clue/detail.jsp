@@ -87,6 +87,54 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 			}
 		})
 
+		//为关联市场活动模态窗口的全选按钮绑定事件
+		$("#qx").click(function () {
+			$(":checkbox[name=xz]").prop("checked",this.checked)
+		})
+
+		//除全选按钮外绑定
+		$("#tBody2").on("click",$(":checkbox[name=xz]"),function () {
+
+			$("#qx").prop("checked",$(":checkbox[name=xz]").length==$(":checkbox[name=xz]:checked").length)
+
+		})
+
+		//为关联按钮绑定事件
+		$("#relateBtn").click(function () {
+			var param = "";
+			if($(":checkbox[name=xz]:checked").length==0){
+				alert("至少选择一项市场活动进行关联")
+			}else{
+				$.each($(":checkbox[name=xz]:checked"),function (i,n) {
+					param+="aid="+n.value;
+					if(i<$(":checkbox[name=xz]:checked").length-1){
+						param+="&";
+					}
+				})
+				param+="&clueId="+"${requestScope.get("clue").getId()}"
+				$.ajax({
+					url:"workbench/clue/relate.do",
+					type:"get",
+					data: param,
+					dataType:"json",
+					success(result){
+						if(result.success){
+							alert("关联成功");
+							showActivityList();
+							$("#bundModal").modal("hide");
+							$("#qx").prop("checked",false);
+							$("#aname").val("");
+						}else{
+							alert("关联失败");
+						}
+					}
+
+				})
+			}
+
+		})
+
+
 
 		//页面加载完毕以后展现市场活动列表
 		showActivityList();
@@ -117,14 +165,14 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				})
 				$("#tBody").html(html);
 			}else{
-				alert("查询关联市场活动列表失败")
+				//alert("查询关联市场活动列表失败")
+				$("#tBody").html("");//这部是为了解除最后一个市场活动，页面也能显示正常
 			}
 			}
 		})
 	}
 	//解除市场活动关联方法
 	function unbund(id) {
-		alert("id:"+id);
 		$.ajax({
 			url:"workbench/clue/relieveById.do",
 			type: "get",
@@ -173,6 +221,12 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 	}
 
 
+	/*
+	* 	这个页面还没有完善的功能 编辑、删除按钮
+	* 	备注部分的内容
+	*
+	* */
+
 </script>
 
 </head>
@@ -200,7 +254,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					<table id="activityTable" class="table table-hover" style="width: 900px; position: relative;top: 10px;">
 						<thead>
 							<tr style="color: #B3B3B3;">
-								<td><input type="checkbox"/></td>
+								<td><input type="checkbox" id="qx"/></td>
 								<td>名称</td>
 								<td>开始日期</td>
 								<td>结束日期</td>
@@ -228,7 +282,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">关联</button>
+					<button type="button" class="btn btn-primary" id="relateBtn">关联</button>
 				</div>
 			</div>
 		</div>
@@ -401,7 +455,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 			<h3>${requestScope.get("clue").getFullname()}${requestScope.get("clue").getAppellation()}<small>${requestScope.get("clue").getCompany()}</small></h3>
 		</div>
 		<div style="position: relative; height: 50px; width: 500px;  top: -72px; left: 700px;">
-			<button type="button" class="btn btn-default" onclick="window.location.href='workbench/clue/convert.jsp';"><span class="glyphicon glyphicon-retweet"></span> 转换</button>
+			<button type="button" class="btn btn-default" onclick="window.location.href='workbench/clue/convert.jsp?id=${requestScope.get("clue").getId()}&fullname=${requestScope.get("clue").getFullname()}&appellation=${requestScope.get("clue").getAppellation()}&company=${requestScope.get("clue").getCompany()}&owner=${requestScope.get("clue").getOwner()}';"><span class="glyphicon glyphicon-retweet"></span> 转换</button>
 			<button type="button" class="btn btn-default" data-toggle="modal" data-target="#editClueModal"><span class="glyphicon glyphicon-edit"></span> 编辑</button>
 			<button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
 		</div>

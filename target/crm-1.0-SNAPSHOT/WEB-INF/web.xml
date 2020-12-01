@@ -160,6 +160,16 @@
         <servlet-name>ClueController</servlet-name>
         <url-pattern>/workbench/clue/getActivityListByNameAndNotByClueId.do</url-pattern>
     </servlet-mapping>
-
-
+    <servlet-mapping>
+        <servlet-name>ClueController</servlet-name>
+        <url-pattern>/workbench/clue/relate.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ClueController</servlet-name>
+        <url-pattern>/workbench/clue/getActivityListByName.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ClueController</servlet-name>
+        <url-pattern>/workbench/clue/convert.do</url-pattern>
+    </servlet-mapping>
 </web-app>

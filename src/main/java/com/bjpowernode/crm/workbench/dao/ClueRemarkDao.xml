@@ -4,8 +4,29 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.bjpowernode.crm.workbench.dao.ClueRemarkDao">
-	
-  	
+	<select id="getCountByCid" resultType="int">
+        select count(*)
+        from tbl_clue_remark
+        where clueId in
+        <foreach collection="array" item="ids" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </select>
+
+    <delete id="deleteByCid">
+        delete
+        from tbl_clue_remark
+        where clueId in
+        <foreach collection="array" item="ids" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </delete>
+
+    <select id="getCluesByClueId" resultType="com.bjpowernode.crm.workbench.domain.ClueRemark">
+        select *
+         from tbl_clue_remark
+         where clueId = #{clueId}
+    </select>
 </mapper>
 
 

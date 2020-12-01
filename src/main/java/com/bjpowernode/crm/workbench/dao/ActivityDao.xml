@@ -152,4 +152,28 @@
             and a.name like '%' #{aname} '%'
         </if>
     </select>
+
+    <select id="getActivityListByName" resultType="com.bjpowernode.crm.workbench.domain.Activity">
+        select
+            a.id,
+            b.`name` AS owner,
+            a.name,
+            a.startDate,
+            a.endDate,
+            a.cost,
+            a.description,
+            a.createTime,
+            a.createBy,
+            a.editTime,
+            a.editBy
+        FROM tbl_activity a
+        JOIN tbl_user b
+        ON a.owner = b.id
+        WHERE a.id IN(select activityId from tbl_clue_activity_relation where clueId = #{clueId})
+        <if test="aname!=null and aname!=''">
+            AND a.name like '%' #{aname} '%'
+        </if>
+
+
+    </select>
 </mapper>
