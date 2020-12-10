@@ -218,6 +218,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 		$("#updateBtn").click(function () {
 			alert("更新按钮事件还没做，有空的话回来完善吧！")
 		})
+
 		pageList(1,2);
 
 	});

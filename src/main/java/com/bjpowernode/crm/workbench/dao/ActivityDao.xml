@@ -176,4 +176,14 @@
 
 
     </select>
+
+    <select id="getAllActivities" resultType="com.bjpowernode.crm.workbench.domain.Activity">
+        select * from
+        tbl_activity
+    </select>
+
+    <select id="getActivityListByName2" resultType="com.bjpowernode.crm.workbench.domain.Activity">
+        select * from tbl_activity
+        where name like '%' #{aname} '%'
+    </select>
 </mapper>

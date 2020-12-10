@@ -28,7 +28,15 @@
             #{address}
         )
     </insert>
-  	
+
+    <select id="getAllContacts" resultType="com.bjpowernode.crm.workbench.domain.Contacts">
+        select * from tbl_contacts
+    </select>
+
+    <select id="getContactsByName" resultType="com.bjpowernode.crm.workbench.domain.Contacts">
+        select * from tbl_contacts
+        where fullname like '%' #{cname} '%'
+    </select>
 </mapper>
 
 

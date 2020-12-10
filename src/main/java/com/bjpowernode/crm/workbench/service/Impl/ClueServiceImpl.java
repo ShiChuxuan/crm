@@ -11,10 +11,7 @@ import com.bjpowernode.crm.workbench.domain.*;
 import com.bjpowernode.crm.workbench.service.ClueService;
 import org.apache.ibatis.session.SqlSession;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ClueServiceImpl implements ClueService {
     SqlSession session = SqlSessionUtil.getSqlSession();
@@ -151,15 +148,13 @@ public class ClueServiceImpl implements ClueService {
         *
         * */
         boolean flag = false;
-        String createTime = DateTimeUtil.getSysTime();
-        String customerId = UUIDUtil.getUUID();
-        String contactId  = UUIDUtil.getUUID();
-        String tranId = UUIDUtil.getUUID();
-        //通过线索id获取线索对象(线索对象当中封装了线索的信息,公司相关的信息生成客户,人的信息生成联系人)
+        String createTime = DateTimeUtil.getSysTime();//创建时间
+        String tranId = UUIDUtil.getUUID();//交易id
+        //(1)通过线索id获取线索对象(线索对象当中封装了线索的信息,公司相关的信息生成客户,人的信息生成联系人)
         Clue clue = clueDao.getClueById2(clueId);
 
-//===============================创建联系人===========================================================
-        //联系人创建需要的相关的信息
+
+        //相关的信息
         String owner = clue.getOwner();
         String source = clue.getSource();
         String fullname = clue.getFullname();
@@ -172,11 +167,37 @@ public class ClueServiceImpl implements ClueService {
         String nextContactTime = clue.getNextContactTime();
         String address = clue.getAddress();
 
+//===============================创建客户===========================================================
+        //(2) 通过线索对象提取客户信息，当该客户不存在的时候，新建客户（根据公司的名称精确匹配，判断该客户是否存在！）
+        String company = clue.getCompany();
+        Customer customer = customerDao.getCustomerByName(company);
+        if(customer==null){
+            customer = new Customer();
+            customer.setId(UUIDUtil.getUUID());
+            customer.setOwner(owner);
+            customer.setName(clue.getCompany());
+            customer.setWebsite(clue.getWebsite());
+            customer.setPhone(clue.getPhone());
+            customer.setCreateBy(createBy);
+            customer.setCreateTime(createTime);
+            customer.setContactSummary(contactSummary);
+            customer.setNextContactTime(nextContactTime);
+            customer.setDescription(description);
+            customer.setAddress(address);
+            //创建客户
+            int count5 = customerDao.createCustomer(customer);
+            if(count5!=1){
+                return flag = false;
+            }
+        }
+
+//===============================创建联系人===========================================================
+        //(3) 通过线索对象提取联系人信息，保存联系人
         Contacts contact = new Contacts();
-        contact.setId(contactId);
+        contact.setId(UUIDUtil.getUUID());
         contact.setOwner(owner);
         contact.setSource(source);
-        contact.setCustomerId(customerId);
+        contact.setCustomerId(customer.getId());
         contact.setFullname(fullname);
         contact.setAppellation(appellation);
         contact.setEmail(email);
@@ -194,79 +215,46 @@ public class ClueServiceImpl implements ClueService {
         if(count!=1){
             return false;
         }
-//===============================关联市场活动===========================================================
-        //获取关联的市场活动的id
-        List<String> aids = clueActivityRelationDao.getActivityIdByCid(clueId);
-         //联系人市场活动关联关系表的id
-        int count1 = 0;
-        for(int i = 0;i < aids.size();i++){
-            String id    = UUIDUtil.getUUID();
-            String aid   = aids.get(i);
-            //创建联系人市场活动关联
-            int count2 = contactsActivityRelationDao.relate(id,contactId,aid);
-            if(count2==1){
-                count1++;
-            }
-        }
 
-        if(count1!=aids.size()){
-            return false;
-        }
-
-//===============================转换线索备注成为联系人备注============================================
+//===============================转换备注成为联系人和客户备注============================================
+        //(4) 线索备注转换到客户备注以及联系人备注
         //获取线索的备注
+        //转换为联系人备注
         List<ClueRemark> clueRemarks = clueRemarkDao.getCluesByClueId(clueId);
-        int count4 = 0;
+        int count3 = 0;
         for(ClueRemark clueRemark:clueRemarks){
+            //取出备注信息（主要转换到客户备注和联系人备注就是这个noteContent）
+            String noteContent = clueRemark.getNoteContent();
             ContactsRemark contactsRemark = new ContactsRemark();
+            //创建联系人备注
             contactsRemark.setId(UUIDUtil.getUUID());//id
-            contactsRemark.setNoteContent(clueRemark.getNoteContent());//备注
-            contactsRemark.setCreateBy(clueRemark.getCreateBy());//创建者
-            contactsRemark.setCreateTime(clueRemark.getCreateTime());//创建时间
-            contactsRemark.setEditFlag(clueRemark.getEditFlag());//修改标志
-            contactsRemark.setContactsId(contactId);
+            contactsRemark.setNoteContent(noteContent);//备注
+            contactsRemark.setCreateBy(createBy);//创建者
+            contactsRemark.setCreateTime(createTime);//创建时间
+            contactsRemark.setEditFlag("0");//修改标志
+            contactsRemark.setContactsId(contact.getId());//联系人id
 
             //创建线索
-            int count3 = contactsRemarkDao.relateRemark(contactsRemark);
-            if(count3==1){
-                count4++;
+            int count4 = contactsRemarkDao.relateRemark(contactsRemark);
+            if(count4==1){
+                count3++;
             }
         }
-        if(count4!=clueRemarks.size()){
+        if(count3!=clueRemarks.size()){
             return flag = false;
         }
-
-//===============================创建客户===========================================================
-        Customer customer = new Customer();
-        customer.setId(customerId);
-        customer.setOwner(owner);
-        customer.setName(clue.getCompany());
-        customer.setWebsite(clue.getWebsite());
-        customer.setPhone(clue.getPhone());
-        customer.setCreateBy(createBy);
-        customer.setCreateTime(createTime);
-        customer.setContactSummary(contactSummary);
-        customer.setNextContactTime(nextContactTime);
-        customer.setDescription(description);
-        customer.setAddress(address);
-        //创建客户
-        int count5 = customerDao.createCustomer(customer);
-        if(count5!=1){
-            return flag = false;
-        }
-
-
-//===============================转换线索备注成为客户备注(删除线索备注，未写)================================================
+        //转换为客户备注
         int count6 = 0;
         for(ClueRemark clueRemark:clueRemarks){
-
+            String noteContent = clueRemark.getNoteContent();
             CustomerRemark customerRemark = new CustomerRemark();
+
             customerRemark.setId(UUIDUtil.getUUID());//id
-            customerRemark.setNoteContent(clueRemark.getNoteContent());//备注
-            customerRemark.setCreateBy(clueRemark.getCreateBy());//创建者
-            customerRemark.setCreateTime(clueRemark.getCreateTime());//创建时间
-            customerRemark.setEditFlag(clueRemark.getEditFlag());//修改标志
-            customerRemark.setCustomerId(customerId);
+            customerRemark.setNoteContent(noteContent);//备注
+            customerRemark.setCreateBy(createBy);//创建者
+            customerRemark.setCreateTime(createTime);//创建时间
+            customerRemark.setEditFlag("0");//修改标志
+            customerRemark.setCustomerId(customer.getId());//客户id
 
             //创建线索
             int count7 =customerRemarkDao.relate(customerRemark);
@@ -278,20 +266,97 @@ public class ClueServiceImpl implements ClueService {
             return flag = false;
         }
 
+
+//===============================转换市场活动===========================================================
+        //(5) “线索和市场活动”的关系转换到“联系人和市场活动”的关系
+        //获取关联的市场活动的id
+        List<String> aids = clueActivityRelationDao.getActivityIdByCid(clueId);
+        //联系人市场活动关联关系表的id
+        int count1 = 0;
+        for(int i = 0;i < aids.size();i++){
+            String id    = UUIDUtil.getUUID();
+            String aid   = aids.get(i);
+            String contactId = contact.getId();
+            //创建联系人市场活动关联
+            int count2 = contactsActivityRelationDao.relate(id,contactId,aid);
+            if(count2==1){
+                count1++;
+            }
+        }
+
+        if(count1!=aids.size()){
+            return false;
+        }
+
 //===============================创建交易，交易历史？============================================================
+        //(6) 如果有创建交易需求，创建一条交易
+        /*
+        *   t对象在controller里面已经封装好的信息如下：
+        *       id,money,expectedDate,stage,activityId,createBy,createTime
+        *   接下来可以通过第一部生成的clue对象，取出一些信息，完善对t对象的封装
+        *
+        * */
+
+        //创建交易和创建交易历史
         if(t!=null){
             //t不是空，创建交易
+            t.setCustomerId(customer.getId());
+            t.setOwner(owner);
+            t.setSource(source);
+            t.setNextContactTime(nextContactTime);
+            t.setDescription(description);
+            t.setContactSummary(contactSummary);
+            t.setContactsId(contact.getId());
             int count8 =tranDao.createTran(t);
+
             if(count8!=1){
+                return flag = false;
+            }
+        //(7) 如果创建了交易，则创建一条该交易下的交易历史
+            TranHistory history = new TranHistory();
+            history.setId(UUIDUtil.getUUID());
+            history.setStage(t.getStage());
+            history.setMoney(t.getMoney());
+            history.setExpectedDate(t.getExpectedDate());
+            history.setCreateTime(t.getCreateTime());
+            history.setCreateBy(t.getCreateBy());
+            history.setTranId(t.getId());
+            int count9 = tranHistoryDao.createTranHistory(history);
+            if(count9!=1){
                 return flag = false;
             }
         }
 
-//===============================删除线索=======================================================================
 
+//===============================删除线索、删除线索备注、删除线索关联市场=======================================================================
+        //(8) 删除线索备注
+        //先删除备注
+        String cid[] = new String[1];
+        cid[0]=clueId;
+        //获得备注条数
+        int count10 = clueRemarkDao.getCountByCid(cid);
+        //删除备注
+        int count11 = clueRemarkDao.deleteByCid(cid);
+        if(count10!=count11){
+            return flag = false;
+        }
 
+        //(9) 删除线索和市场活动的关系
+        //删除线索关联市场活动
+        //获得条数
+        int count12 = clueActivityRelationDao.getCountByCid(cid);
+        //删除
+        int count13 = clueActivityRelationDao.deleteByCid(cid);
+        if(count12!=count13){
+            return flag = false;
+        }
 
-
+        //(10) 删除线索
+        //删除线索
+        int count14 = clueDao.deleteClue(cid);
+        if(count14!=1){
+            return flag = false;
+        }
 
 
         flag=true;

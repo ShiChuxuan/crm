@@ -142,6 +142,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 
 
 	function showActivityList() {
+
 		$.ajax({
 			url:"workbench/clue/getActivityListByClueId.do",
 			type:"get",
@@ -171,6 +172,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 			}
 		})
 	}
+
 	//解除市场活动关联方法
 	function unbund(id) {
 		$.ajax({
@@ -195,6 +197,8 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 	//打开关联市场活动窗口方法
 	//完善完毕。嘻嘻
 	function bund() {
+		//将全选的checkbox的√去掉
+		$("#qx").prop("checked",false);
 		$.ajax({
 			url:"workbench/clue/getActivityListWithoutClueId.do",
 			type:"get",

@@ -1,5 +1,9 @@
 package com.bjpowernode.workbench.test;
 
+import com.bjpowernode.crm.settings.dao.DicTypeDao;
+import com.bjpowernode.crm.settings.dao.DicValueDao;
+import com.bjpowernode.crm.settings.domain.DicType;
+import com.bjpowernode.crm.settings.domain.DicValue;
 import com.bjpowernode.crm.util.DateTimeUtil;
 import com.bjpowernode.crm.util.ServiceFactory;
 import com.bjpowernode.crm.util.SqlSessionUtil;
@@ -13,7 +17,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.List;
+import java.util.*;
 
 /*
 *
@@ -258,7 +262,64 @@ public class ActivityTest {
 
     @Test
     public void test10(){
+        SqlSession session = SqlSessionUtil.getSqlSession();
+        CustomerDao customerDao = session.getMapper(CustomerDao.class);
+        Customer customer = customerDao.getCustomerByName("阿里巴巴");
+        if(customer==null){
 
+        }
+    }
+
+    @Test
+    public void test11(){
+        SqlSession  session = SqlSessionUtil.getSqlSession();
+        DicTypeDao dicTypeDao = (DicTypeDao)session.getMapper(DicTypeDao.class);
+        DicValueDao dicValueDao = (DicValueDao)session.getMapper(DicValueDao.class);
+        Map<String, List<DicValue>>map = new HashMap<>();
+        //获得所有类型的code
+        List<DicType> typeList =dicTypeDao.getTypes();
+        for(DicType dicType:typeList){
+            String type  = dicType.getCode();
+            List<DicValue> value = dicValueDao.getValuesByType(type);
+            map.put(type,value);
+        }
+        //
+        Set<String> set= map.keySet();
+        for(String type:set){
+            List<DicValue>dicValues = map.get(type);
+            System.out.println("=============="+type+"==============");
+            for(DicValue dicValue:dicValues){
+                System.out.println("text:"+dicValue.getText());
+                System.out.println("value:"+dicValue.getValue());
+                System.out.println("++++++++++++++++++++++++++++++++++++");
+            }
+
+        }
+    }
+
+    @Test
+    public void test12(){
+        ResourceBundle bundle = ResourceBundle.getBundle("Stage2Possibility");
+        Map pMap = new HashMap();
+        Set<String> set1 = bundle.keySet();
+        for(String key:set1){
+            String value=  bundle.getString(key);
+            System.out.println(key+":"+value);
+        }
+    }
+
+    @Test
+    public void test13(){
+        SqlSession session = SqlSessionUtil.getSqlSession();
+        TranDao tranDao = session.getMapper(TranDao.class);
+        int total = tranDao.getTotal();//总数
+        List<Map<String,Object>> list = tranDao.getCharts();
+        for(Map<String,Object> map:list){
+            Set<String>set= map.keySet();
+            for(String key:set){
+                System.out.println(key+":"+map.get(key));
+            }
+        }
     }
 
 }

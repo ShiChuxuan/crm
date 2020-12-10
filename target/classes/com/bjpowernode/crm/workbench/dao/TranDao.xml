@@ -28,7 +28,145 @@
         #{nextContactTime}
         )
     </insert>
-  	
+
+    <select id="getTotal" resultType="int">
+            select count(*)
+            from tbl_tran
+    </select>
+
+    <select id="pageList" resultType="com.bjpowernode.crm.workbench.domain.Tran">
+        select
+            a.id,
+            b.name as owner,
+            a.money,
+            a.name,
+            a.expectedDate,
+            c.name as customerId,
+            a.stage,
+            a.type,
+            a.source,
+            a.activityId,
+            d.fullname as contactsId,
+            a.createBy,
+            a.createTime,
+            a.editBy,
+            a.editTime,
+            a.description,
+            a.contactSummary,
+            a.nextContactTime
+        from tbl_tran a
+        join tbl_user b
+        on a.owner = b.id
+        join tbl_customer c
+        on a.customerId = c.id
+        left join tbl_contacts d
+        on a.contactsId = d.id
+        <where>
+            <if test="owner!=null and owner!=''">
+                b.name like '%' #{owner} '%'
+            </if>
+            <if test="name!=null and name!=''">
+               and a.name like '%' #{name} '%'
+            </if>
+            <if test="customer!=null and customer!=''">
+                and c.name like '%' #{customer} '%'
+            </if>
+            <if test="stage!=null and stage!=''">
+                and a.stage like '%' #{stage} '%'
+            </if>
+            <if test="transactionType!=null and transactionType!=''">
+                and a.type like '%' #{transactionType} '%'
+            </if>
+            <if test="source!=null and source!=''">
+                and a.source like '%' #{source} '%'
+            </if>
+            <if test="contact!=null and contact!=''">
+                and d.fullname like '%' #{contact} '%'
+            </if>
+        </where>
+        order by a.createTime desc
+        limit #{skipCount},#{pageSize}
+    </select>
+
+    <insert id="save">
+        insert into tbl_tran
+        values
+        (
+            #{id},
+            #{owner},
+            #{money},
+            #{name},
+            #{expectedDate},
+            #{customerId},
+            #{stage},
+            #{type},
+            #{source},
+            #{activityId},
+            #{contactId},
+            #{createBy},
+            #{createTime},
+            #{editBy},
+            #{editTime},
+            #{description},
+            #{contactSummary},
+            #{nextContactTime}
+        )
+    </insert>
+
+    <select id="getDetail" resultType="com.bjpowernode.crm.workbench.domain.Tran">
+        select
+        a.id,
+        b.name as owner,
+        a.money,
+        a.name,
+        a.expectedDate,
+        e.name as customerId,
+        a.stage,
+        a.type,
+        a.source,
+        c.name as activityId,
+        d.fullname as contactsId,
+        a.createBy,
+        a.createTime,
+        a.editBy,
+        a.editTime,
+        a.description,
+        a.contactSummary,
+        a.nextContactTime
+        from tbl_tran a
+
+        join tbl_user b
+        on a.owner = b.id
+
+        left join tbl_activity c
+        on a.activityId = c.id
+
+        left join tbl_contacts d
+        on a.contactsId = d.id
+
+        join tbl_customer e
+        on a.customerId = e.id
+        where a.id = #{id}
+    </select>
+
+    <select id="getTranById" resultType="com.bjpowernode.crm.workbench.domain.Tran">
+        select * from tbl_Tran
+        where id = #{id}
+    </select>
+
+    <update id="changeStage">
+        update tbl_tran
+        set stage = #{stage},
+        editBy = #{editBy},
+        editTime = #{editTime}
+        where id = #{id}
+    </update>
+
+    <select id="getCharts" resultType="map">
+        select stage as name,count(*) as value
+        from tbl_tran
+        GROUP BY stage
+    </select>
 </mapper>
 
 

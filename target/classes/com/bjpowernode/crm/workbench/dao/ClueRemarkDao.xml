@@ -23,7 +23,7 @@
     </delete>
 
     <select id="getCluesByClueId" resultType="com.bjpowernode.crm.workbench.domain.ClueRemark">
-        select *
+        select noteContent
          from tbl_clue_remark
          where clueId = #{clueId}
     </select>

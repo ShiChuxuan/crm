@@ -9,9 +9,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.http.HttpSession;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class SysInitListener implements ServletContextListener {
     /*
@@ -50,6 +48,39 @@ public class SysInitListener implements ServletContextListener {
             application.setAttribute(key,value);
         }
         System.out.println("处理数据字典结束！");
+
+        //------------------------------------------------------
+
+        //数据字典处理完毕后，处理Stage2Possibility.properties文件
+        /*
+        *
+        *   处理Stage2Possibility.properties文件步骤：
+        *       解析该文件，将该属性文件中的键值对关系处理成为java中键值对关系（map）
+        *
+        *       Map<String(阶段stage),String(可能性possibility)>pMap = ...
+        *       pMap.put("01资质审查",10)；
+        *       pMap.put("02需求分析",25)；
+        *       ...
+        *       pMap.put("07...",...)
+        *
+        *       pMap保存值之后，就放在服务器缓存中
+        *       application.setAttribute("pMap",pMap);
+        *
+        *
+        *
+        * */
+
+        //解析properties文件
+        //将配置文件放在src的根目录下，在maven中配置文件们都被整理成了一个resource文件夹，所以resource文件夹可以看做在根目录下
+        //使用ResourceBundle.getBundle() 参数直接是需要读取的配置文件的名字，后面不需要加.properties。加了报错
+        ResourceBundle bundle = ResourceBundle.getBundle("Stage2Possibility");
+        Map pMap = new HashMap();
+        Set<String> set1 = bundle.keySet();
+        for(String key:set1){
+            String value=  bundle.getString(key);
+            pMap.put(key,value);
+        }
+        application.setAttribute("pMap",pMap);
 
     }
 

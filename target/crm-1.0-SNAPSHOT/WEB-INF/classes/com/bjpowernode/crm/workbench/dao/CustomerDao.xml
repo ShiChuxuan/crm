@@ -24,7 +24,23 @@
 
         )
     </insert>
-  	
+
+    <select id="getCustomerByName" resultType="com.bjpowernode.crm.workbench.domain.Customer">
+        select *
+        from tbl_customer
+        where name = #{company}
+    </select>
+
+    <select id="getCustomerName" resultType="com.bjpowernode.crm.workbench.domain.Customer">
+        select name from tbl_customer
+        where name like '%' #{name} '%'
+    </select>
+
+    <select id="getCustomerIdByName" resultType="string">
+        select id
+        from tbl_customer
+        where name=#{customerName}
+    </select>
 </mapper>
 
 

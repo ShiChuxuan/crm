@@ -1,7 +1,7 @@
 package com.bjpowernode.crm.workbench.domain;
 
 public class Customer {
-	
+
 	private String id;
 	private String owner;
 	private String name;
@@ -95,6 +95,23 @@ public class Customer {
 		this.address = address;
 	}
 
-	
-	
+
+	@Override
+	public String toString() {
+		return "Customer{" +
+				"id='" + id + '\'' +
+				", owner='" + owner + '\'' +
+				", name='" + name + '\'' +
+				", website='" + website + '\'' +
+				", phone='" + phone + '\'' +
+				", createBy='" + createBy + '\'' +
+				", createTime='" + createTime + '\'' +
+				", editBy='" + editBy + '\'' +
+				", editTime='" + editTime + '\'' +
+				", contactSummary='" + contactSummary + '\'' +
+				", nextContactTime='" + nextContactTime + '\'' +
+				", description='" + description + '\'' +
+				", address='" + address + '\'' +
+				'}';
+	}
 }

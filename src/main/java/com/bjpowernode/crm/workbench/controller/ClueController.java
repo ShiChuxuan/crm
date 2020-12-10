@@ -210,11 +210,6 @@ public class ClueController extends HttpServlet {
     private void relate(HttpServletRequest request, HttpServletResponse response) {
         String [] aids = request.getParameterValues("aid");
         String clueId  = request.getParameter("clueId");
-        for(String aid:aids){
-            System.out.println("aid:"+aid);
-            System.out.println("==========");
-        }
-        System.out.println("clueId:"+clueId);
         ClueService service = (ClueService) ServiceFactory.getService(new ClueServiceImpl());
         boolean flag = service.relate(clueId,aids);
         PrintJson.printJsonFlag(response,flag);
@@ -245,7 +240,6 @@ public class ClueController extends HttpServlet {
              String activityId = request.getParameter("activityId");//市场活动id
              String id = UUIDUtil.getUUID();//id
              String createTime = DateTimeUtil.getSysTime();//创建时间
-
 
 
              t = new Tran();

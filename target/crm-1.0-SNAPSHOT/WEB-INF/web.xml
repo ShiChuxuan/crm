@@ -115,7 +115,7 @@
         <url-pattern>/workbench/activity/deleteActivityInDetail.do</url-pattern>
     </servlet-mapping>
 
-    <!--线索管理器-->
+    <!--线索控制器-->
     <servlet>
         <servlet-name>ClueController</servlet-name>
         <servlet-class>com.bjpowernode.crm.workbench.controller.ClueController</servlet-class>
@@ -171,5 +171,62 @@
     <servlet-mapping>
         <servlet-name>ClueController</servlet-name>
         <url-pattern>/workbench/clue/convert.do</url-pattern>
+    </servlet-mapping>
+    <!--交易控制器-->
+    <servlet>
+        <servlet-name>TranController</servlet-name>
+        <servlet-class>com.bjpowernode.crm.workbench.controller.TranController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/add.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/pageList.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/getUserList.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/getActivities.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/getActivityListByName.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/getAllContacts.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/getContactsByName.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/getCustomerName.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/save.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/getDetail.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/getHistoryListByTranId.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/changeStage.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TranController</servlet-name>
+        <url-pattern>/workbench/tran/getCharts.do</url-pattern>
     </servlet-mapping>
 </web-app>
